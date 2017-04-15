@@ -2,10 +2,12 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
 from   abc import ABCMeta, abstractmethod, abstractproperty
+from   distutils.version import LooseVersion
 import numpy as np
 import MDAnalysis
 from   MDAnalysis.topology import tables
 from   difflib import get_close_matches
+
 
 
 def PatchTrajectory(trajectory,interface):
@@ -50,6 +52,24 @@ class PYTIM(object):
     UNDEFINED_ITIM_GROUP="No itim_group defined"
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
+
+
+    def _basic_checks(self,universe):
+        self._MDAversion=MDAnalysis.__version__
+        assert LooseVersion(self._MDAversion) >  LooseVersion('0.15'), "Must use MDAnalysis  >= 0.15"
+
+        assert isinstance(universe,MDAnalysis.core.universe.Universe), "You must pass an MDAnalysis Universe"
+
+        if LooseVersion(self._MDAversion) >= LooseVersion('0.16'):  # new topology system
+            if 'radii' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import Radii
+                radii=np.zeros(len(universe.atoms))
+                universe.add_TopologyAttr(Radii(radii))
+            else:
+                assert isinstance(universe.atoms.radii, property), "Internal error, 'radii' is not a property"
+                
+                
+        
 
     def writepdb(self,filename='layers.pdb',centered='no',multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
