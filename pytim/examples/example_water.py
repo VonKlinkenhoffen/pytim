@@ -3,6 +3,7 @@
 import MDAnalysis as mda
 import pytim
 from   pytim.datafiles import *
+import numpy as np
 
 u          = mda.Universe(WATER_GRO)
 oxygens    = u.select_atoms("name OW")
@@ -16,10 +17,21 @@ print u.atoms.names
 print 'names' in dir(u)
 print 'radii' not in dir(u.atoms)
 print len(u.atoms)
-interface  = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=1,multiproc=True)#,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
+interface  = pytim.ITIM(u,alpha=2.,max_layers=4,molecular=False)#,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
+print np.unique(g.tempfactors)
+print np.unique(u.atoms.tempfactors)
+print u.atoms.radii
+print oxygens.radii
+print "----", len(u.atoms),interface.universe.atoms.n_atoms
+tempf = getattr(u.atoms,'tempfactors')
+print "->",np.unique(tempf)
 
-layer      = interface.layers[0][0]  # first layer, upper side
+layer      = interface.layers[0,0]  # first layer, upper side
 print ("Interface computed. Upper layer:\n %s out of %s" % (layer,oxygens))
+print interface._MDAversion
+print mda.__version__
+print len(interface.layers[0,0])
+print len(interface.layers[0,1])
 
 interface.writepdb('layers.pdb',centered=False)
 

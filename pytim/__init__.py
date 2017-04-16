@@ -53,20 +53,147 @@ class PYTIM(object):
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
 
+    def LabelLayer(self,group,value):
+        if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
+            group.bfactors = value
+        else:
+            group.tempfactors = value
 
     def _basic_checks(self,universe):
         self._MDAversion=MDAnalysis.__version__
-        assert LooseVersion(self._MDAversion) >  LooseVersion('0.15'), "Must use MDAnalysis  >= 0.15"
+        assert LooseVersion(self._MDAversion) >=  LooseVersion('0.15'), "Must use MDAnalysis  >= 0.15"
 
         assert isinstance(universe,MDAnalysis.core.universe.Universe), "You must pass an MDAnalysis Universe"
 
         if LooseVersion(self._MDAversion) >= LooseVersion('0.16'):  # new topology system
             if 'radii' not in dir(universe.atoms):
                 from MDAnalysis.core.topologyattrs import Radii
-                radii=np.zeros(len(universe.atoms))
+                radii=np.zeros(len(universe.atoms))*np.nan
                 universe.add_TopologyAttr(Radii(radii))
             else:
                 assert isinstance(universe.atoms.radii, property), "Internal error, 'radii' is not a property"
+
+            if 'tempfactors' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import Tempfactors
+                tempfactors=np.zeros(len(universe.atoms))
+                universe.add_TopologyAttr(Tempfactors(tempfactors))
+            else:
+                assert isinstance(universe.atoms.tempfactors, property), "Internal error, 'tempfactors' is not a property"
+
+            if 'bfactors' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import Bfactors
+                bfactors=np.zeros(len(universe.atoms))
+                universe.add_TopologyAttr(Bfactors(bfactors))
+            else:
+                assert isinstance(universe.atoms.bfactors, property), "Internal error, 'bfactors' is not a property"
+
+            if 'altLocs' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import AltLocs
+                altLocs=np.array([' ']*len(universe.atoms))
+                universe.add_TopologyAttr(AltLocs(altLocs))
+
+            if 'icodes' not in dir(universe.residues):
+                from MDAnalysis.core.topologyattrs import ICodes
+                icodes=np.array([' ']*len(universe.residues))
+                universe.add_TopologyAttr(ICodes(icodes))
+
+            if 'occupancies' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import Occupancies
+                occupancies=np.ones(len(universe.atoms))
+                universe.add_TopologyAttr(Occupancies(occupancies))
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
+                
+                
+        
                 
                 
         
@@ -115,6 +242,7 @@ class PYTIM(object):
                             n_atoms=self.universe.atoms.n_atoms)
 
             self.PDB[filename].write(self.universe.atoms)
+            print "PDB LEN++++",type(self.PDB[filename].atoms)
 
         except:
             print("Error writing pdb file")
@@ -134,7 +262,8 @@ class PYTIM(object):
             # TODO: add a switch that allows to use the atom name instead of the type!
             if _g is not None:
                 _types = np.copy(_g.types)
-                if not np.any(np.equal(_g.radii, None)): # all radii already set
+                if not ( np.any(np.equal(_g.radii, None)) or np.any(np.isnan(_g.radii))) : # all radii already set
+                    print "----< IN"
                     break
                 if radii_dict is None : # some radii are not set  and no dict provided
                     _radii_dict = tables.vdwradii

@@ -4,6 +4,10 @@ branches:
   except:
   - dev
 
+env:
+	- MDAv=0.15
+	- MDAv=0.16
+
 matrix:
     include:
         - os: linux
@@ -22,6 +26,7 @@ install:
 - pip install Sphinx>=1.4.3
 - pip install matplotlib
 - pip install cython
+- pip install MDAnalysis==$MDAv
 - pip install .
 # command to run tests
 script: cd docs ; make doctest

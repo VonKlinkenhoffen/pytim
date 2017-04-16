@@ -277,9 +277,9 @@ class ITIM(pytim.PYTIM):
         utilities.centerbox(self.universe,center_direction=self.normal)
 
         # first we label all atoms in itim_group to be in the gas phase
-        self.itim_group.atoms.bfactors = 0.5
+        self.LabelLayer(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.cluster_group.atoms.bfactors = 0
+        self.LabelLayer(self.cluster_group.atoms, 0)
 
         _radius=self.cluster_group.radii
         self._seen=[[],[]]
@@ -318,10 +318,10 @@ class ITIM(pytim.PYTIM):
                 self._layers[low][index] = group
 
 
-        # assign bfactors to all layers
+        # assign labels to all layers. This can be the bfactor or the tempfactor property, depending on the MDA version
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
-                _layer.bfactors = _nlayer+1
+                self.LabelLayer(_layer, _nlayer+1)
 
         # reset the interpolator
         self._interpolator=None
